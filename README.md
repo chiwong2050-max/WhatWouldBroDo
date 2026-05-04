@@ -32,12 +32,20 @@ npx serve .
 
 ### Social links
 
-Update the URLs in [index.html](file:///e:/Trae2/What%20Would%20Bro%20Do/index.html) anywhere you see:
+Update the URLs in [app.js](file:///e:/Trae2/What%20Would%20Bro%20Do/app.js) in the `LINKS` object:
 
 - `https://youtube.com/@BroThinksHesJesus`
 - `https://tiktok.com/@BroThinksHesJesus`
 - `https://instagram.com/BroThinksHesJesus`
 - `https://facebook.com/BroThinksHesJesus`
+
+### Vision links (your funnels)
+
+Also update these in `LINKS`:
+
+- `tattooVogue`
+- `meowDancing`
+- `adultBizGo`
 
 ## Sharing (deep links)
 
@@ -48,6 +56,17 @@ When someone shares from the Result screen, the app includes a link like:
 Opening that link loads the shared blessing directly on the Result screen.
 
 Older shared links using `/?r=...` are still supported for backward compatibility.
+
+## AI Mode (Beta)
+
+The app includes an optional AI Mode toggle. If no AI endpoint is configured, it automatically falls back to the built-in response arrays.
+
+To wire AI Mode to a real model:
+
+- Host your own small HTTP endpoint (serverless/API) that accepts `POST { "prompt": "..." }` and returns either plain text or JSON containing a response (for example `{ "text": "..." }`).
+- Set `window.WWBD_AI_ENDPOINT` (and optionally `window.WWBD_AI_TOKEN`) before `app.js` runs, or edit the app to point to your endpoint.
+
+Do not put API keys directly into this repo for production.
 
 ## Share preview image (OG/Twitter)
 
@@ -75,6 +94,24 @@ In [index.html](file:///e:/Trae2/What%20Would%20Bro%20Do/index.html), replace:
 - Manifest: [manifest.json](file:///e:/Trae2/What%20Would%20Bro%20Do/manifest.json)
 - Offline caching: [service-worker.js](file:///e:/Trae2/What%20Would%20Bro%20Do/service-worker.js)
 - Icons: `icons/icon-192.png` and `icons/icon-512.png` (placeholders)
+
+## Trend Board (dev)
+
+Append `?dev=1` to the URL, then open The Vision tab to see the Trend Board (last 50 struggles + top repeated words). Data is stored only in localStorage on that device.
+
+## App Icon prompt
+
+Use this prompt in any image generator:
+
+Create a mobile app icon:
+- A modern Jesus-like character
+- White robe, glowing gold aura
+- Slightly confused expression
+- Holding a phone
+- Background: dark navy + gold light
+- Style: cinematic, clean, minimal, high contrast
+- Must be readable at small size
+- Square format, centered subject
 
 ## Deploy for free
 

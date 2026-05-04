@@ -1,7 +1,7 @@
 {
   "name": "What Would Bro Do?",
   "short_name": "WWBD",
-  "description": "Ask Bro anything. He thinks he knows. Follow @BroThinksHesJesus",
+  "description": "The official hub of the Bro Multiverse. Ask Bro anything. He thinks he knows. Follow @BroThinksHesJesus",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

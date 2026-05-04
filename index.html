@@ -6,13 +6,13 @@
     <meta name="theme-color" content="#0a0a2e" />
     <meta
       name="description"
-      content="Ask Bro anything. He thinks he knows. Follow @BroThinksHesJesus"
+      content="The official hub of the Bro Multiverse. Ask Bro anything. He thinks he knows. Follow @BroThinksHesJesus"
     />
 
     <meta property="og:title" content="What Would Bro Do?" />
     <meta
       property="og:description"
-      content="Ask Bro anything. He thinks he knows. Follow @BroThinksHesJesus"
+      content="The official hub of the Bro Multiverse. Ask Bro anything. He thinks he knows. Follow @BroThinksHesJesus"
     />
     <meta property="og:image" content="og.png" />
     <meta property="og:type" content="website" />
@@ -20,7 +20,7 @@
     <meta name="twitter:title" content="What Would Bro Do?" />
     <meta
       name="twitter:description"
-      content="Ask Bro anything. He thinks he knows. Follow @BroThinksHesJesus"
+      content="The official hub of the Bro Multiverse. Ask Bro anything. He thinks he knows. Follow @BroThinksHesJesus"
     />
     <meta name="twitter:image" content="og.png" />
 
@@ -66,25 +66,46 @@
   </head>
   <body>
     <div class="particles" aria-hidden="true"></div>
+    <div id="splash" class="splash">
+      <div class="splash__panel">
+        <div class="splash__title">What Would Bro Do?</div>
+        <div class="splash__sub">Millions are asking. He keeps answering.</div>
+        <button id="splashCta" class="btn btn--gold btn--xl" type="button">Ask Bro Now</button>
+        <a
+          class="btn btn--outline btn--xl"
+          href="https://youtube.com/@BroThinksHesJesus"
+          data-link="youtube"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Watch the chaos →
+        </a>
+      </div>
+    </div>
 
     <header class="topbar">
       <div class="brand">
         <div class="brand__title">What Would Bro Do?</div>
         <div class="brand__tagline">When life gets hard, ask Bro.</div>
+        <div id="streakBadge" class="streakBadge" aria-live="polite"></div>
       </div>
 
       <div class="topbar__actions" aria-label="Settings">
+        <button id="aiToggle" class="pill" type="button" aria-pressed="false" aria-label="AI Mode">
+          <span class="pill__icon" aria-hidden="true"><i class="fa-solid fa-wand-sparkles"></i></span>
+          <span class="pill__label">AI (Beta): Off</span>
+        </button>
+        <button id="chaosToggle" class="pill" type="button" aria-pressed="false" aria-label="Chaos Mode">
+          <span class="pill__icon" aria-hidden="true"><i class="fa-solid fa-triangle-exclamation"></i></span>
+          <span class="pill__label">Chaos: Off</span>
+        </button>
         <button id="soundToggle" class="pill" type="button" aria-pressed="false" aria-label="Sound">
           <span class="pill__icon" aria-hidden="true"><i class="fa-solid fa-volume-xmark"></i></span>
           <span class="pill__label">Sound: Off</span>
         </button>
       </div>
+      <div id="modeStatus" class="modeStatus" aria-live="polite"></div>
 
-      <nav class="tabs" aria-label="Primary">
-        <button class="tab is-active" type="button" data-view="home">Home</button>
-        <button class="tab" type="button" data-view="social">Follow The Vision</button>
-        <button class="tab" type="button" data-view="about">About</button>
-      </nav>
     </header>
 
     <main class="app" id="app" role="main">
@@ -125,9 +146,22 @@
             Get The Blessing 🙏
           </button>
 
+          <section id="notifyCard" class="card notifyCard" aria-label="Notifications" hidden>
+            <div class="notifyCard__top">
+              <div class="notifyCard__title">Receive daily blessings from Bro?</div>
+              <div class="notifyCard__sub">One per day. Tap once. Ascend forever.</div>
+            </div>
+            <div class="notifyCard__actions">
+              <button id="notifyEnable" class="btn btn--white" type="button">Enable</button>
+              <button id="notifyDismiss" class="btn btn--ghost" type="button">Not now</button>
+            </div>
+            <div id="notifyStatus" class="status" role="status" aria-live="polite"></div>
+          </section>
+
           <a
             class="link"
             href="https://youtube.com/@BroThinksHesJesus"
+            data-link="youtube"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -175,6 +209,7 @@
       <section class="view" id="view-result" data-view="result" aria-live="polite">
         <div class="card card--result">
           <div class="kicker">Bro Says:</div>
+          <div id="chaosBanner" class="chaosBanner" hidden>⚠️ Chaos Mode Activated</div>
           <div id="broResponse" class="response">...</div>
 
           <div class="actions">
@@ -183,6 +218,7 @@
             <a
               class="btn btn--gold"
               href="https://youtube.com/@BroThinksHesJesus"
+              data-link="youtube"
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -193,108 +229,174 @@
           <div id="shareStatus" class="status" role="status" aria-live="polite"></div>
 
           <div id="broTip" class="tip"></div>
+          <div id="funnelCard" class="funnelCard" hidden></div>
+
+          <div class="creatorTools">
+            <button id="videoIdeaBtn" class="btn btn--white btn--xl" type="button">Create Video Idea 🎬</button>
+            <button id="hooksBtn" class="btn btn--outline" type="button">Generate Hooks ⚡</button>
+            <button id="commentBaitBtn" class="btn btn--outline" type="button">Comment Bait 💬</button>
+            <pre id="creatorOutput" class="creatorOutput" aria-live="polite"></pre>
+          </div>
+
+          <button id="visionHint" class="link link--small" type="button">
+            Need a business miracle? Visit The Vision tab.
+          </button>
         </div>
       </section>
 
-      <section class="view" id="view-social" data-view="social">
-        <h2 class="sectionTitle">Follow The Vision</h2>
+      <section class="view" id="view-miracles" data-view="miracles">
+        <h2 class="sectionTitle">Miracles</h2>
 
-        <div class="platformGrid">
-          <article class="platformCard platformCard--youtube">
+        <div class="card">
+          <p class="subtext subtext--left">
+            A distraction-free feed of Bro’s latest miracles. Tap a clip. Ascend.
+          </p>
+          <a
+            class="btn btn--gold btn--xl"
+            href="https://youtube.com/@BroThinksHesJesus"
+            data-link="youtube"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Subscribe to the Channel 🙏
+          </a>
+        </div>
+
+        <div id="miraclesList" class="miraclesGrid" aria-label="Miracles feed"></div>
+      </section>
+
+      <section class="view" id="view-vision" data-view="vision">
+        <h2 class="sectionTitle">The Vision</h2>
+        <p class="subtext subtext--left">
+          A Bro-approved directory of blessed projects. Use this tab when you need a serious funnel.
+        </p>
+
+        <div class="platformGrid" aria-label="Bro Multiverse directory">
+          <article class="platformCard platformCard--gold">
             <div class="platformCard__top">
               <div class="platformCard__icon" aria-hidden="true">
-                <i class="fa-brands fa-youtube"></i>
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
               </div>
               <div class="platformCard__meta">
-                <div class="platformCard__name">YouTube</div>
-                <div class="platformCard__desc">Subscribe for Daily Miracles</div>
+                <div class="platformCard__name">Tattoo Vogue</div>
+                <div class="platformCard__desc">The world's most divine tattoo inspiration.</div>
               </div>
             </div>
             <a
               class="btn btn--white"
-              href="https://youtube.com/@BroThinksHesJesus"
+              href="https://example.com"
+              data-link="tattooVogue"
               target="_blank"
               rel="noopener noreferrer"
             >
-              Follow Now
+              Visit Site
             </a>
           </article>
 
-          <article class="platformCard platformCard--tiktok">
+          <article class="platformCard platformCard--gold">
             <div class="platformCard__top">
               <div class="platformCard__icon" aria-hidden="true">
-                <i class="fa-brands fa-tiktok"></i>
+                <i class="fa-solid fa-paw"></i>
               </div>
               <div class="platformCard__meta">
-                <div class="platformCard__name">TikTok</div>
-                <div class="platformCard__desc">Join The Chaos</div>
+                <div class="platformCard__name">Meow Dancing</div>
+                <div class="platformCard__desc">Ascended felines dancing for your soul.</div>
               </div>
             </div>
             <a
               class="btn btn--white"
-              href="https://tiktok.com/@BroThinksHesJesus"
+              href="https://example.com"
+              data-link="meowDancing"
               target="_blank"
               rel="noopener noreferrer"
             >
-              Follow Now
+              Visit Site
             </a>
           </article>
 
-          <article class="platformCard platformCard--instagram">
+          <article class="platformCard platformCard--gold">
             <div class="platformCard__top">
               <div class="platformCard__icon" aria-hidden="true">
-                <i class="fa-brands fa-instagram"></i>
+                <i class="fa-solid fa-coins"></i>
               </div>
               <div class="platformCard__meta">
-                <div class="platformCard__name">Instagram</div>
-                <div class="platformCard__desc">See The Digital Art</div>
+                <div class="platformCard__name">AdultBizGo</div>
+                <div class="platformCard__desc">Turn your vision into digital gold.</div>
               </div>
             </div>
             <a
               class="btn btn--white"
-              href="https://instagram.com/BroThinksHesJesus"
+              href="https://example.com"
+              data-link="adultBizGo"
               target="_blank"
               rel="noopener noreferrer"
             >
-              Follow Now
-            </a>
-          </article>
-
-          <article class="platformCard platformCard--facebook">
-            <div class="platformCard__top">
-              <div class="platformCard__icon" aria-hidden="true">
-                <i class="fa-brands fa-facebook"></i>
-              </div>
-              <div class="platformCard__meta">
-                <div class="platformCard__name">Facebook</div>
-                <div class="platformCard__desc">Share With The Family</div>
-              </div>
-            </div>
-            <a
-              class="btn btn--white"
-              href="https://facebook.com/BroThinksHesJesus"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Follow Now
+              Visit Site
             </a>
           </article>
         </div>
 
         <div class="more">
-          <h3 class="more__title">More From The Multiverse</h3>
+          <h3 class="more__title">Follow Bro</h3>
           <div class="more__links">
-            <a class="more__link" href="#" aria-disabled="true">Coming Soon: WWBD Fitness</a>
-            <a class="more__link" href="#" aria-disabled="true">Coming Soon: WWBD Dating</a>
-            <a class="more__link" href="#" aria-disabled="true">Coming Soon: WWBD Finance</a>
+            <a
+              class="more__link"
+              href="https://youtube.com/@BroThinksHesJesus"
+              data-link="youtube"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              YouTube — Subscribe for Daily Miracles
+            </a>
+            <a
+              class="more__link"
+              href="https://tiktok.com/@BroThinksHesJesus"
+              data-link="tiktok"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              TikTok — Join The Chaos
+            </a>
+            <a
+              class="more__link"
+              href="https://instagram.com/BroThinksHesJesus"
+              data-link="instagram"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Instagram — See The Digital Art
+            </a>
+            <a
+              class="more__link"
+              href="https://facebook.com/BroThinksHesJesus"
+              data-link="facebook"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Facebook — Share With The Family
+            </a>
           </div>
         </div>
-      </section>
 
-      <section class="view" id="view-about" data-view="about">
-        <h2 class="sectionTitle">About</h2>
+        <section id="trendBoard" class="card trendBoard" hidden aria-label="Trend Board">
+          <h3 class="sectionTitle sectionTitle--sm">Trend Board</h3>
+          <div class="trendBoard__meta">
+            Local only. Shows last 50 struggles + top repeated words.
+          </div>
+          <div class="trendBoard__cols">
+            <div>
+              <div class="trendBoard__subTitle">Last 50</div>
+              <div id="trendList" class="trendList"></div>
+            </div>
+            <div>
+              <div class="trendBoard__subTitle">Top Words</div>
+              <div id="trendWords" class="trendWords"></div>
+            </div>
+          </div>
+        </section>
 
         <div class="card">
+          <h3 class="sectionTitle sectionTitle--sm">About</h3>
           <p>
             Bro Thinks He's Jesus is a 100% digitally created virtual character living in the modern world.
             Every video, every miracle, every confused reaction — all digital. Created for entertainment and
@@ -314,90 +416,45 @@
           </p>
 
           <div class="legalLinks">
-            <a class="legalLinks__item" href="/terms.html">Terms of Use</a>
-            <a class="legalLinks__item" href="/privacy.html">Privacy Policy</a>
-          </div>
-
-          <div class="socialLinks">
-            <a
-              class="socialLinks__item"
-              href="https://youtube.com/@BroThinksHesJesus"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <i class="fa-brands fa-youtube"></i>
-              YouTube
-            </a>
-            <a
-              class="socialLinks__item"
-              href="https://tiktok.com/@BroThinksHesJesus"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <i class="fa-brands fa-tiktok"></i>
-              TikTok
-            </a>
-            <a
-              class="socialLinks__item"
-              href="https://instagram.com/BroThinksHesJesus"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <i class="fa-brands fa-instagram"></i>
-              Instagram
-            </a>
-            <a
-              class="socialLinks__item"
-              href="https://facebook.com/BroThinksHesJesus"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <i class="fa-brands fa-facebook"></i>
-              Facebook
-            </a>
+            <a class="legalLinks__item" href="terms.html">Terms of Use</a>
+            <a class="legalLinks__item" href="privacy.html">Privacy Policy</a>
           </div>
         </div>
       </section>
     </main>
 
-    <footer class="socialBar" aria-label="Social Links">
-      <a
-        class="socialBar__icon"
-        href="https://youtube.com/@BroThinksHesJesus"
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label="YouTube"
-      >
-        <i class="fa-brands fa-youtube"></i>
-      </a>
-      <a
-        class="socialBar__icon"
-        href="https://tiktok.com/@BroThinksHesJesus"
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label="TikTok"
-      >
-        <i class="fa-brands fa-tiktok"></i>
-      </a>
-      <a
-        class="socialBar__icon"
-        href="https://instagram.com/BroThinksHesJesus"
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label="Instagram"
-      >
-        <i class="fa-brands fa-instagram"></i>
-      </a>
-      <a
-        class="socialBar__icon"
-        href="https://facebook.com/BroThinksHesJesus"
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label="Facebook"
-      >
-        <i class="fa-brands fa-facebook"></i>
-      </a>
+    <footer class="bottomNav" aria-label="Primary Navigation">
+      <button class="bottomNav__btn is-active" type="button" data-view="home">
+        <i class="fa-solid fa-comment-dots" aria-hidden="true"></i>
+        <span>Ask Bro</span>
+      </button>
+      <button class="bottomNav__btn" type="button" data-view="miracles">
+        <i class="fa-solid fa-circle-play" aria-hidden="true"></i>
+        <span>Miracles</span>
+      </button>
+      <button class="bottomNav__btn" type="button" data-view="vision">
+        <i class="fa-solid fa-eye" aria-hidden="true"></i>
+        <span>The Vision</span>
+      </button>
     </footer>
+
+    <div id="shareModal" class="modal" aria-hidden="true">
+      <div class="modal__backdrop" data-close="shareModal"></div>
+      <div class="modal__panel" role="dialog" aria-modal="true" aria-label="Share as image">
+        <button class="modal__close" type="button" data-close="shareModal" aria-label="Close">
+          <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+        </button>
+        <div class="modal__title">Share as Image</div>
+        <div class="modal__body">
+          <img id="sharePreview" class="sharePreview" alt="Blessing share image preview" />
+        </div>
+        <div class="modal__actions">
+          <button id="shareImageBtn" class="btn btn--white" type="button">Share</button>
+          <button id="downloadImageBtn" class="btn btn--outline" type="button">Download</button>
+        </div>
+        <div id="shareImageStatus" class="status" role="status" aria-live="polite"></div>
+      </div>
+    </div>
 
     <script src="app.js" defer></script>
   </body>
