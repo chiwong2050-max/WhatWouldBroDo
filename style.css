@@ -94,6 +94,57 @@ body {
   border-bottom: 1px solid rgba(255, 255, 255, 0.07);
 }
 
+.topbar__actions {
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+}
+
+.pill {
+  appearance: none;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.9);
+  border-radius: 999px;
+  padding: 10px 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 800;
+  font-size: 13px;
+  cursor: pointer;
+  transition: transform 120ms ease, background 120ms ease, border-color 120ms ease;
+}
+
+.pill__icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 215, 0, 0.24);
+  background: rgba(255, 215, 0, 0.08);
+  color: rgba(255, 215, 0, 0.98);
+}
+
+.pill:active {
+  transform: translateY(1px);
+}
+
+.pill.is-on {
+  border-color: rgba(255, 215, 0, 0.45);
+  background: rgba(255, 215, 0, 0.12);
+}
+
+.pill.is-on .pill__icon {
+  border-color: rgba(255, 215, 0, 0.5);
+  background: rgba(255, 215, 0, 0.18);
+}
+
+.pill:hover {
+  border-color: rgba(255, 215, 0, 0.35);
+}
+
 .brand {
   text-align: center;
 }
@@ -289,6 +340,7 @@ body {
 
 .btn:focus-visible,
 .tab:focus-visible,
+.pill:focus-visible,
 .chip:focus-visible,
 .link:focus-visible,
 .socialBar__icon:focus-visible,
@@ -298,6 +350,74 @@ body {
   outline: none;
   box-shadow: 0 0 0 4px rgba(255, 215, 0, 0.18), 0 18px 60px rgba(0, 0, 0, 0.45);
   border-color: rgba(255, 215, 0, 0.55);
+}
+
+.confetti {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.confettiPiece {
+  position: absolute;
+  top: -20px;
+  width: 10px;
+  height: 14px;
+  border-radius: 3px;
+  transform: translate3d(0, 0, 0);
+  animation: confettiFall 900ms ease-out forwards;
+  opacity: 0.95;
+  filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.45));
+}
+
+@keyframes confettiFall {
+  0% {
+    transform: translate3d(var(--x, 0), -30px, 0) rotate(0deg);
+  }
+  100% {
+    transform: translate3d(calc(var(--x, 0) + var(--drift, 0px)), calc(100vh + 40px), 0)
+      rotate(var(--rot, 260deg));
+    opacity: 0;
+  }
+}
+
+.response.is-pop {
+  animation: popIn 260ms ease-out;
+}
+
+@keyframes popIn {
+  0% {
+    transform: translateY(6px) scale(0.985);
+    filter: blur(0.1px);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+.wiggle {
+  animation: wiggle 320ms ease-in-out;
+}
+
+@keyframes wiggle {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-6px);
+  }
+  40% {
+    transform: translateX(5px);
+  }
+  60% {
+    transform: translateX(-4px);
+  }
+  80% {
+    transform: translateX(3px);
+  }
 }
 
 .chips {
@@ -794,7 +914,10 @@ body {
   .particles::before,
   .particles::after,
   .view.is-enter,
-  .btn--gold:not(:disabled) {
+  .btn--gold:not(:disabled),
+  .confettiPiece,
+  .response.is-pop,
+  .wiggle {
     animation: none !important;
   }
 }

@@ -1,4 +1,4 @@
-const CACHE_NAME = "wwbd-cache-v8";
+const CACHE_NAME = "wwbd-cache-v9";
 
 const PRECACHE_URLS = [
   "./",

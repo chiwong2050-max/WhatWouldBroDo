@@ -94,6 +94,7 @@ const againBtn = $("#againBtn");
 const broResponseEl = $("#broResponse");
 const broTipEl = $("#broTip");
 const shareStatusEl = $("#shareStatus");
+const soundToggle = $("#soundToggle");
 const communityForm = $("#communityForm");
 const communityInput = $("#communityInput");
 const communityList = $("#communityList");
@@ -103,6 +104,7 @@ const communityCount = $("#communityCount");
 
 let currentResponse = "";
 let blessingNonce = 0;
+let audioCtx = null;
 
 const COMMUNITY_KEY = "wwbd_community_struggles_v1";
 const COMMUNITY_MAX_STORE = 50;
@@ -110,9 +112,138 @@ const COMMUNITY_MAX_SHOW = 5;
 const COMMUNITY_MAX_LEN = 280;
 const SHARE_PARAM_INDEX = "i";
 const SHARE_PARAM_LEGACY = "r";
+const SOUND_KEY = "wwbd_sound_v1";
 
 function pickRandom(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function prefersReducedMotion() {
+  return window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
+function getSoundEnabled() {
+  try {
+    return localStorage.getItem(SOUND_KEY) === "1";
+  } catch (e) {
+    return false;
+  }
+}
+
+function setSoundEnabled(enabled) {
+  try {
+    localStorage.setItem(SOUND_KEY, enabled ? "1" : "0");
+  } catch (e) {
+    // ignore
+  }
+  updateSoundToggleUi();
+}
+
+function updateSoundToggleUi() {
+  if (!soundToggle) return;
+  const enabled = getSoundEnabled();
+  soundToggle.classList.toggle("is-on", enabled);
+  soundToggle.setAttribute("aria-pressed", enabled ? "true" : "false");
+  const label = soundToggle.querySelector(".pill__label");
+  const iconWrap = soundToggle.querySelector(".pill__icon");
+  if (label) label.textContent = enabled ? "Sound: On" : "Sound: Off";
+  if (iconWrap) {
+    iconWrap.innerHTML = enabled
+      ? '<i class="fa-solid fa-volume-high"></i>'
+      : '<i class="fa-solid fa-volume-xmark"></i>';
+  }
+}
+
+async function playChime(kind) {
+  if (!getSoundEnabled()) return;
+  try {
+    const AudioContextImpl = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextImpl) return;
+    if (!audioCtx) audioCtx = new AudioContextImpl();
+    if (audioCtx.state === "suspended") await audioCtx.resume();
+
+    const now = audioCtx.currentTime;
+    const gain = audioCtx.createGain();
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.connect(audioCtx.destination);
+
+    const seq =
+      kind === "share"
+        ? [740, 988, 1175]
+        : kind === "error"
+          ? [196, 165, 147]
+          : [523, 659, 784];
+
+    let t = now;
+    seq.forEach((freq, idx) => {
+      const o = audioCtx.createOscillator();
+      o.type = "triangle";
+      o.frequency.setValueAtTime(freq, t);
+      o.connect(gain);
+      const a = 0.0001;
+      const peak = 0.06;
+      gain.gain.setValueAtTime(a, t);
+      gain.gain.exponentialRampToValueAtTime(peak, t + 0.02);
+      gain.gain.exponentialRampToValueAtTime(a, t + 0.12);
+      o.start(t);
+      o.stop(t + 0.13);
+      t += idx === 0 ? 0.08 : 0.1;
+    });
+  } catch (e) {
+    // ignore
+  }
+}
+
+function maybeVibrate(pattern) {
+  if (!getSoundEnabled()) return;
+  if (!("vibrate" in navigator)) return;
+  try {
+    navigator.vibrate(pattern);
+  } catch (e) {
+    // ignore
+  }
+}
+
+function burstConfetti(count = 44) {
+  if (prefersReducedMotion()) return;
+  const root = document.createElement("div");
+  root.className = "confetti";
+  document.body.appendChild(root);
+
+  const colors = [
+    "rgba(255, 215, 0, 0.98)",
+    "rgba(255, 255, 255, 0.95)",
+    "rgba(24, 119, 242, 0.9)",
+    "rgba(225, 48, 108, 0.9)",
+    "rgba(37, 244, 238, 0.9)",
+  ];
+
+  for (let i = 0; i < count; i += 1) {
+    const piece = document.createElement("div");
+    piece.className = "confettiPiece";
+    const left = Math.random() * 100;
+    const x = (Math.random() * 2 - 1) * 60;
+    const drift = (Math.random() * 2 - 1) * 120;
+    const rot = (Math.random() * 2 - 1) * 420;
+    const delay = Math.random() * 0.12;
+    const dur = 720 + Math.random() * 520;
+    const w = 7 + Math.random() * 8;
+    const h = 10 + Math.random() * 14;
+    piece.style.left = `${left}%`;
+    piece.style.setProperty("--x", `${x}px`);
+    piece.style.setProperty("--drift", `${drift}px`);
+    piece.style.setProperty("--rot", `${rot}deg`);
+    piece.style.animationDelay = `${delay}s`;
+    piece.style.animationDuration = `${dur}ms`;
+    piece.style.width = `${w}px`;
+    piece.style.height = `${h}px`;
+    piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+    root.appendChild(piece);
+  }
+
+  window.setTimeout(() => {
+    root.remove();
+  }, 1400);
 }
 
 function setTextareaHeight(el) {
@@ -270,7 +401,12 @@ function generateBlessing() {
   window.setTimeout(() => {
     if (myNonce !== blessingNonce) return;
     broResponseEl.textContent = currentResponse;
+    broResponseEl.classList.remove("is-pop");
+    requestAnimationFrame(() => broResponseEl.classList.add("is-pop"));
     broTipEl.textContent = pickRandom(broTips);
+    burstConfetti(28);
+    playChime("blessing");
+    maybeVibrate([20, 40, 20]);
   }, 220);
 }
 
@@ -314,6 +450,9 @@ async function shareBlessing() {
         url: shareUrl,
       });
       shareStatusEl.textContent = "Shared. Now go forth and be unhinged 🙏";
+      burstConfetti(44);
+      playChime("share");
+      maybeVibrate([30, 40, 30]);
       return;
     }
 
@@ -321,11 +460,24 @@ async function shareBlessing() {
     shareStatusEl.textContent = copied
       ? "Copied! Now paste it and spread the word 🙏"
       : `Copy this link:\n${shareUrl}`;
+    if (copied) {
+      burstConfetti(36);
+      playChime("share");
+      maybeVibrate([20, 30, 20]);
+    }
   } catch (err) {
     const copied = await copyToClipboard(shareText);
     shareStatusEl.textContent = copied
       ? "Copied! Now paste it and spread the word 🙏"
       : `Copy this link:\n${shareUrl}`;
+    if (copied) {
+      burstConfetti(36);
+      playChime("share");
+      maybeVibrate([20, 30, 20]);
+    } else {
+      playChime("error");
+      maybeVibrate([60]);
+    }
   }
 }
 
@@ -345,6 +497,18 @@ function wireActions() {
   againBtn.addEventListener("click", () => showView("home"));
   shareBtn.addEventListener("click", shareBlessing);
 
+  if (soundToggle) {
+    updateSoundToggleUi();
+    soundToggle.addEventListener("click", async () => {
+      const next = !getSoundEnabled();
+      setSoundEnabled(next);
+      if (next) {
+        await playChime("blessing");
+        maybeVibrate(20);
+      }
+    });
+  }
+
   $$(".chip[data-template]").forEach((chip) => {
     chip.addEventListener("click", () => {
       const template = chip.getAttribute("data-template") || "";
@@ -352,6 +516,7 @@ function wireActions() {
         struggleInput.value = template;
         setTextareaHeight(struggleInput);
         struggleInput.focus({ preventScroll: true });
+        playChime("blessing");
       }
     });
   });
@@ -383,12 +548,22 @@ function wireActions() {
       const text = normalizeStruggle(communityInput?.value);
       if (!text) {
         if (communityStatus) communityStatus.textContent = "Type something first, my child.";
+        if (communityInput) {
+          communityInput.classList.remove("wiggle");
+          requestAnimationFrame(() => communityInput.classList.add("wiggle"));
+        }
+        playChime("error");
         return;
       }
 
       if (text.length > COMMUNITY_MAX_LEN) {
         if (communityStatus)
           communityStatus.textContent = `Keep it under ${COMMUNITY_MAX_LEN} characters. Parables, not novels.`;
+        if (communityInput) {
+          communityInput.classList.remove("wiggle");
+          requestAnimationFrame(() => communityInput.classList.add("wiggle"));
+        }
+        playChime("error");
         return;
       }
 
