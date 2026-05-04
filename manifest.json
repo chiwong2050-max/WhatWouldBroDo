@@ -1,0 +1,24 @@
+{
+  "name": "What Would Bro Do?",
+  "short_name": "WWBD",
+  "description": "Ask Bro anything. He thinks he knows. Follow @BroThinksHesJesus",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0a0a2e",
+  "theme_color": "#0a0a2e",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
