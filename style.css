@@ -26,6 +26,7 @@ body {
   color: var(--text);
   font-family: Poppins, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
   overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .particles {
@@ -246,6 +247,12 @@ body {
   user-select: none;
 }
 
+.btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none;
+}
+
 .btn:active {
   transform: translateY(1px) scale(0.99);
 }
@@ -262,8 +269,84 @@ body {
   box-shadow: 0 14px 50px rgba(255, 215, 0, 0.18), 0 20px 70px rgba(0, 0, 0, 0.35);
 }
 
-.btn--gold:hover {
+.btn--gold:not(:disabled) {
+  animation: goldPulse 3.2s ease-in-out infinite;
+}
+
+.btn--gold:not(:disabled):hover {
   filter: brightness(1.04);
+}
+
+@keyframes goldPulse {
+  0%,
+  100% {
+    box-shadow: 0 14px 50px rgba(255, 215, 0, 0.16), 0 20px 70px rgba(0, 0, 0, 0.35);
+  }
+  50% {
+    box-shadow: 0 16px 64px rgba(255, 215, 0, 0.24), 0 26px 90px rgba(0, 0, 0, 0.38);
+  }
+}
+
+.btn:focus-visible,
+.tab:focus-visible,
+.chip:focus-visible,
+.link:focus-visible,
+.socialBar__icon:focus-visible,
+.legalLinks__item:focus-visible,
+.socialLinks__item:focus-visible,
+.more__link:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(255, 215, 0, 0.18), 0 18px 60px rgba(0, 0, 0, 0.45);
+  border-color: rgba(255, 215, 0, 0.55);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.chip {
+  appearance: none;
+  border: 1px solid rgba(255, 215, 0, 0.26);
+  background: rgba(255, 255, 255, 0.03);
+  color: rgba(255, 255, 255, 0.92);
+  padding: 10px 12px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: transform 120ms ease, background 120ms ease, border-color 120ms ease;
+}
+
+.chip:active {
+  transform: translateY(1px);
+}
+
+.chip:hover {
+  border-color: rgba(255, 215, 0, 0.55);
+  background: rgba(255, 215, 0, 0.08);
+}
+
+.counterRow {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.counter {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.68);
+  font-weight: 700;
+}
+
+.counter.is-over {
+  color: rgba(255, 160, 160, 0.95);
+}
+
+.input[aria-invalid="true"] {
+  border-color: rgba(255, 160, 160, 0.6);
+  box-shadow: 0 0 0 4px rgba(255, 160, 160, 0.12), 0 14px 34px rgba(0, 0, 0, 0.35);
 }
 
 .btn--outline {
@@ -710,7 +793,8 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .particles::before,
   .particles::after,
-  .view.is-enter {
+  .view.is-enter,
+  .btn--gold:not(:disabled) {
     animation: none !important;
   }
 }

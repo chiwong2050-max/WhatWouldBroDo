@@ -99,8 +99,10 @@ const communityInput = $("#communityInput");
 const communityList = $("#communityList");
 const communityStatus = $("#communityStatus");
 const communityClear = $("#communityClear");
+const communityCount = $("#communityCount");
 
 let currentResponse = "";
+let blessingNonce = 0;
 
 const COMMUNITY_KEY = "wwbd_community_struggles_v1";
 const COMMUNITY_MAX_STORE = 50;
@@ -111,6 +113,13 @@ const SHARE_PARAM_LEGACY = "r";
 
 function pickRandom(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function setTextareaHeight(el) {
+  if (!el) return;
+  el.style.height = "auto";
+  const next = Math.min(el.scrollHeight, 260);
+  el.style.height = `${next}px`;
 }
 
 function getShareUrlForResponse(responseText) {
@@ -180,7 +189,10 @@ function saveCommunityStruggles(list) {
 
 function renderCommunityStruggles() {
   if (!communityList) return;
-  const items = loadCommunityStruggles().slice(0, COMMUNITY_MAX_SHOW);
+  const all = loadCommunityStruggles();
+  const items = all.slice(0, COMMUNITY_MAX_SHOW);
+
+  if (communityClear) communityClear.disabled = all.length === 0;
 
   if (items.length === 0) {
     communityList.innerHTML = `<div class="communityEmpty">No community struggles yet. Be the first to confess.</div>`;
@@ -248,10 +260,18 @@ function showView(view) {
 }
 
 function generateBlessing() {
-  currentResponse = pickRandom(broResponses);
-  broResponseEl.textContent = currentResponse;
-  broTipEl.textContent = pickRandom(broTips);
+  const myNonce = (blessingNonce += 1);
+  broResponseEl.textContent = "Receiving the blessing...";
+  broTipEl.textContent = "";
   showView("result");
+
+  const picked = pickRandom(broResponses);
+  currentResponse = picked;
+  window.setTimeout(() => {
+    if (myNonce !== blessingNonce) return;
+    broResponseEl.textContent = currentResponse;
+    broTipEl.textContent = pickRandom(broTips);
+  }, 220);
 }
 
 async function copyToClipboard(text) {
@@ -325,9 +345,37 @@ function wireActions() {
   againBtn.addEventListener("click", () => showView("home"));
   shareBtn.addEventListener("click", shareBlessing);
 
+  $$(".chip[data-template]").forEach((chip) => {
+    chip.addEventListener("click", () => {
+      const template = chip.getAttribute("data-template") || "";
+      if (struggleInput) {
+        struggleInput.value = template;
+        setTextareaHeight(struggleInput);
+        struggleInput.focus({ preventScroll: true });
+      }
+    });
+  });
+
+  if (struggleInput) {
+    setTextareaHeight(struggleInput);
+    struggleInput.addEventListener("input", () => setTextareaHeight(struggleInput));
+  }
+
   struggleInput.addEventListener("keydown", (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key === "Enter") generateBlessing();
   });
+
+  const communitySubmitBtn = communityForm?.querySelector('button[type="submit"]') || null;
+  const updateCommunityUi = () => {
+    const text = normalizeStruggle(communityInput?.value);
+    const len = text.length;
+    if (communityCount) {
+      communityCount.textContent = `${len}/${COMMUNITY_MAX_LEN}`;
+      communityCount.classList.toggle("is-over", len > COMMUNITY_MAX_LEN);
+    }
+    if (communityInput) communityInput.setAttribute("aria-invalid", len > COMMUNITY_MAX_LEN ? "true" : "false");
+    if (communitySubmitBtn) communitySubmitBtn.disabled = len === 0 || len > COMMUNITY_MAX_LEN;
+  };
 
   if (communityForm) {
     communityForm.addEventListener("submit", (e) => {
@@ -349,8 +397,19 @@ function wireActions() {
       saveCommunityStruggles(next);
       if (communityInput) communityInput.value = "";
       if (communityStatus) communityStatus.textContent = "Submitted. The community is now burdened with your lore.";
+      if (communityInput) setTextareaHeight(communityInput);
+      updateCommunityUi();
       renderCommunityStruggles();
     });
+
+    if (communityInput) {
+      setTextareaHeight(communityInput);
+      communityInput.addEventListener("input", () => {
+        setTextareaHeight(communityInput);
+        updateCommunityUi();
+      });
+    }
+    updateCommunityUi();
   }
 
   if (communityClear) {
@@ -361,6 +420,7 @@ function wireActions() {
         // ignore
       }
       if (communityStatus) communityStatus.textContent = "Community struggles cleared. A fresh start.";
+      updateCommunityUi();
       renderCommunityStruggles();
     });
   }
