@@ -4,6 +4,15 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#0a0a2e" />
+    <meta name="referrer" content="no-referrer" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; img-src 'self' data: blob: https:; style-src 'self' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com data:; script-src 'self' https://www.googletagmanager.com https://pagead2.googlesyndication.com https://www.google-analytics.com https://tpc.googlesyndication.com; connect-src 'self' https:; manifest-src 'self'; worker-src 'self'"
+    />
+    <meta
+      http-equiv="Permissions-Policy"
+      content="camera=(), microphone=(), geolocation=(), payment=(), usb=(), bluetooth=(), accelerometer=(), gyroscope=(), magnetometer=(), midi=()"
+    />
     <meta
       name="description"
       content="The official hub of the Bro Multiverse. Ask Bro anything. He thinks he knows. Follow @BroThinksHesJesus"
@@ -45,14 +54,7 @@
 
     <!-- Replace G-XXXXXXXX with your Google Analytics ID -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXX"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag() {
-        dataLayer.push(arguments);
-      }
-      gtag("js", new Date());
-      gtag("config", "G-XXXXXXXX");
-    </script>
+    <script src="analytics-placeholder.js"></script>
 
     <!-- Replace with your AdSense Publisher ID when ready -->
     <script
@@ -124,8 +126,12 @@
               autocomplete="off"
               autocapitalize="sentences"
               spellcheck="true"
+              maxlength="280"
             ></textarea>
           </label>
+          <div class="counterRow">
+            <div id="struggleCount" class="counter" aria-live="polite">0/280</div>
+          </div>
 
           <div class="chips" aria-label="Quick struggles">
             <button class="chip" type="button" data-template="My boss asked me to circle back but I already spiritually ascended.">
@@ -156,6 +162,25 @@
               <button id="notifyDismiss" class="btn btn--ghost" type="button">Not now</button>
             </div>
             <div id="notifyStatus" class="status" role="status" aria-live="polite"></div>
+          </section>
+
+          <section id="installCard" class="card installCard" aria-label="Install" hidden>
+            <div class="installCard__title">Install WWBD</div>
+            <div class="installCard__sub">Add Bro to your home screen for faster blessings.</div>
+            <div class="installCard__actions">
+              <button id="installBtn" class="btn btn--gold" type="button">Install</button>
+              <button id="installDismiss" class="btn btn--ghost" type="button">Not now</button>
+            </div>
+          </section>
+
+          <section id="iosInstallCard" class="card installCard" aria-label="Install on iOS" hidden>
+            <div class="installCard__title">Add to Home Screen</div>
+            <div class="installCard__sub">
+              On iPhone/iPad: tap <strong>Share</strong> then <strong>Add to Home Screen</strong>.
+            </div>
+            <div class="installCard__actions">
+              <button id="iosInstallDismiss" class="btn btn--ghost" type="button">Got it</button>
+            </div>
           </section>
 
           <a
@@ -235,7 +260,9 @@
             <button id="videoIdeaBtn" class="btn btn--white btn--xl" type="button">Create Video Idea 🎬</button>
             <button id="hooksBtn" class="btn btn--outline" type="button">Generate Hooks ⚡</button>
             <button id="commentBaitBtn" class="btn btn--outline" type="button">Comment Bait 💬</button>
+            <button id="copyCreatorBtn" class="btn btn--ghost btn--sm" type="button">Copy Output</button>
             <pre id="creatorOutput" class="creatorOutput" aria-live="polite"></pre>
+            <div id="creatorStatus" class="status" role="status" aria-live="polite"></div>
           </div>
 
           <button id="visionHint" class="link link--small" type="button">
@@ -455,6 +482,8 @@
         <div id="shareImageStatus" class="status" role="status" aria-live="polite"></div>
       </div>
     </div>
+
+    <div id="toast" class="toast" aria-live="polite" aria-atomic="true"></div>
 
     <script src="app.js" defer></script>
   </body>

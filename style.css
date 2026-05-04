@@ -44,6 +44,17 @@ body {
   display: none;
 }
 
+.splash.is-hiding {
+  animation: splashOut 220ms ease-in forwards;
+  pointer-events: none;
+}
+
+@keyframes splashOut {
+  to {
+    opacity: 0;
+  }
+}
+
 .splash__panel {
   width: 100%;
   max-width: 560px;
@@ -250,6 +261,93 @@ body {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
+}
+
+.installCard {
+  display: grid;
+  gap: 10px;
+}
+
+.installCard__title {
+  font-weight: 900;
+  font-size: 14px;
+}
+
+.installCard__sub {
+  color: rgba(255, 255, 255, 0.82);
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.installCard__sub strong {
+  color: rgba(255, 215, 0, 0.96);
+}
+
+.installCard__actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.toast {
+  position: fixed;
+  left: 12px;
+  right: 12px;
+  bottom: calc(76px + var(--safeBottom));
+  z-index: 6;
+  display: none;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.toast.is-show {
+  display: block;
+  animation: toastIn 180ms ease-out;
+}
+
+@keyframes toastIn {
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.toast__panel {
+  border-radius: 18px;
+  border: 1px solid rgba(255, 215, 0, 0.18);
+  background: rgba(10, 10, 46, 0.96);
+  box-shadow: var(--shadow);
+  padding: 12px 12px;
+  display: grid;
+  gap: 10px;
+}
+
+.toast__title {
+  font-weight: 900;
+  font-size: 13px;
+}
+
+.toast__sub {
+  color: rgba(255, 255, 255, 0.82);
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.toast__actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.toast__actions .btn {
+  min-width: 120px;
 }
 
 .chaosBanner {
@@ -1315,6 +1413,8 @@ body.is-chaos .response.is-glitch {
   .response.is-pop,
   .response.is-glitch,
   .streakBadge.is-pulse .streakBadge__pill,
+  .toast.is-show,
+  .splash.is-hiding,
   .wiggle {
     animation: none !important;
   }

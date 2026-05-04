@@ -1,4 +1,4 @@
-const CACHE_NAME = "wwbd-cache-v13";
+const CACHE_NAME = "wwbd-cache-v15";
 
 const PRECACHE_URLS = [
   "./",
@@ -7,6 +7,7 @@ const PRECACHE_URLS = [
   "./privacy.html",
   "./style.css",
   "./app.js",
+  "./analytics-placeholder.js",
   "./manifest.json",
   "./og.png",
   "./og-square.png",
@@ -34,6 +35,11 @@ self.addEventListener("activate", (event) => {
       await self.clients.claim();
     })(),
   );
+});
+
+self.addEventListener("message", (event) => {
+  const type = event?.data?.type || "";
+  if (type === "SKIP_WAITING") self.skipWaiting();
 });
 
 self.addEventListener("fetch", (event) => {

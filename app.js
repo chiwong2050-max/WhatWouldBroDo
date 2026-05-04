@@ -117,6 +117,7 @@ const againBtn = $("#againBtn");
 const broResponseEl = $("#broResponse");
 const broTipEl = $("#broTip");
 const shareStatusEl = $("#shareStatus");
+const struggleCount = $("#struggleCount");
 const soundToggle = $("#soundToggle");
 const aiToggle = $("#aiToggle");
 const chaosToggle = $("#chaosToggle");
@@ -128,6 +129,11 @@ const notifyCard = $("#notifyCard");
 const notifyEnable = $("#notifyEnable");
 const notifyDismiss = $("#notifyDismiss");
 const notifyStatus = $("#notifyStatus");
+const installCard = $("#installCard");
+const installBtn = $("#installBtn");
+const installDismiss = $("#installDismiss");
+const iosInstallCard = $("#iosInstallCard");
+const iosInstallDismiss = $("#iosInstallDismiss");
 const splash = $("#splash");
 const splashCta = $("#splashCta");
 const shareModal = $("#shareModal");
@@ -139,6 +145,8 @@ const videoIdeaBtn = $("#videoIdeaBtn");
 const hooksBtn = $("#hooksBtn");
 const commentBaitBtn = $("#commentBaitBtn");
 const creatorOutput = $("#creatorOutput");
+const copyCreatorBtn = $("#copyCreatorBtn");
+const creatorStatus = $("#creatorStatus");
 const visionHint = $("#visionHint");
 const miraclesList = $("#miraclesList");
 const communityForm = $("#communityForm");
@@ -150,6 +158,7 @@ const communityCount = $("#communityCount");
 const trendBoard = $("#trendBoard");
 const trendList = $("#trendList");
 const trendWords = $("#trendWords");
+const toast = $("#toast");
 
 let currentResponse = "";
 let blessingNonce = 0;
@@ -173,7 +182,10 @@ const NOTIFY_DISMISSED_KEY = "wwbd_notify_dismissed_v1";
 const NOTIFY_LAST_KEY = "wwbd_notify_last_v1";
 const TRENDS_KEY = "wwbd_trends_v1";
 const SPLASH_SEEN_KEY = "wwbd_splash_seen_v1";
+const INSTALL_DISMISSED_KEY = "wwbd_install_dismissed_v1";
+const IOS_INSTALL_DISMISSED_KEY = "wwbd_ios_install_dismissed_v1";
 const WATERMARK_DOMAIN = "wwbd.app";
+const STRUGGLE_MAX_LEN = 280;
 
 const LINKS = {
   youtube: "https://youtube.com/@BroThinksHesJesus",
@@ -325,6 +337,167 @@ function updateModeStatus() {
   setModeStatus(`${flags.join(" • ")}${extra}`);
 }
 
+let toastTimer = 0;
+
+function hideToast() {
+  if (!toast) return;
+  toast.classList.remove("is-show");
+  toast.innerHTML = "";
+  if (toastTimer) window.clearTimeout(toastTimer);
+  toastTimer = 0;
+}
+
+function showToast({ title, sub, primaryLabel, secondaryLabel, onPrimary, onSecondary, autoMs = 0 }) {
+  if (!toast) return;
+  if (toastTimer) window.clearTimeout(toastTimer);
+  toastTimer = 0;
+
+  const safeTitle = escapeHtml(title || "");
+  const safeSub = escapeHtml(sub || "");
+  const safePrimary = escapeHtml(primaryLabel || "OK");
+  const safeSecondary = secondaryLabel ? escapeHtml(secondaryLabel) : "";
+
+  toast.innerHTML = `
+    <div class="toast__panel" role="status" aria-live="polite">
+      <div class="toast__title">${safeTitle}</div>
+      <div class="toast__sub">${safeSub}</div>
+      <div class="toast__actions">
+        ${safeSecondary ? `<button class="btn btn--ghost btn--sm" type="button" data-toast-secondary>${safeSecondary}</button>` : ""}
+        <button class="btn btn--gold btn--sm" type="button" data-toast-primary>${safePrimary}</button>
+      </div>
+    </div>
+  `;
+  toast.classList.add("is-show");
+
+  const primaryBtn = toast.querySelector("[data-toast-primary]");
+  const secondaryBtn = toast.querySelector("[data-toast-secondary]");
+
+  if (primaryBtn) {
+    primaryBtn.addEventListener("click", () => {
+      hideToast();
+      onPrimary?.();
+    });
+  }
+  if (secondaryBtn) {
+    secondaryBtn.addEventListener("click", () => {
+      hideToast();
+      onSecondary?.();
+    });
+  }
+
+  if (autoMs && autoMs > 0) {
+    toastTimer = window.setTimeout(() => hideToast(), autoMs);
+  }
+}
+
+function isStandalone() {
+  return (
+    (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) ||
+    window.navigator.standalone === true
+  );
+}
+
+function isIOS() {
+  return /iPad|iPhone|iPod/i.test(navigator.userAgent) && !("MSStream" in window);
+}
+
+function getInstallDismissed() {
+  try {
+    return localStorage.getItem(INSTALL_DISMISSED_KEY) === "1";
+  } catch (e) {
+    return false;
+  }
+}
+
+function setInstallDismissed() {
+  try {
+    localStorage.setItem(INSTALL_DISMISSED_KEY, "1");
+  } catch (e) {
+  }
+}
+
+function getIosInstallDismissed() {
+  try {
+    return localStorage.getItem(IOS_INSTALL_DISMISSED_KEY) === "1";
+  } catch (e) {
+    return false;
+  }
+}
+
+function setIosInstallDismissed() {
+  try {
+    localStorage.setItem(IOS_INSTALL_DISMISSED_KEY, "1");
+  } catch (e) {
+  }
+}
+
+let deferredInstallPrompt = null;
+
+function updateInstallCards() {
+  if (installCard) {
+    const show = Boolean(deferredInstallPrompt) && !isStandalone() && !getInstallDismissed();
+    installCard.hidden = !show;
+  }
+  if (iosInstallCard) {
+    const show = isIOS() && !isStandalone() && !getIosInstallDismissed();
+    iosInstallCard.hidden = !show;
+  }
+}
+
+function wireInstall() {
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    updateInstallCards();
+    track("Install_Prompt_Available");
+  });
+
+  window.addEventListener("appinstalled", () => {
+    deferredInstallPrompt = null;
+    if (installCard) installCard.hidden = true;
+    track("Install_Completed");
+    showToast({
+      title: "Installed",
+      sub: "Bro is now on your home screen.",
+      primaryLabel: "Amen",
+      autoMs: 2600,
+    });
+  });
+
+  if (installBtn) {
+    installBtn.addEventListener("click", async () => {
+      track("Install_Click");
+      if (!deferredInstallPrompt) return;
+      try {
+        await deferredInstallPrompt.prompt();
+        const choice = await deferredInstallPrompt.userChoice;
+        track("Install_Choice", { outcome: choice?.outcome || "" });
+      } catch (e) {
+      }
+      deferredInstallPrompt = null;
+      updateInstallCards();
+    });
+  }
+
+  if (installDismiss) {
+    installDismiss.addEventListener("click", () => {
+      track("Install_Dismiss");
+      setInstallDismissed();
+      if (installCard) installCard.hidden = true;
+    });
+  }
+
+  if (iosInstallDismiss) {
+    iosInstallDismiss.addEventListener("click", () => {
+      track("IOS_Install_Dismiss");
+      setIosInstallDismissed();
+      if (iosInstallCard) iosInstallCard.hidden = true;
+    });
+  }
+
+  updateInstallCards();
+}
+
 async function playChime(kind) {
   if (!getSoundEnabled()) return;
   try {
@@ -422,12 +595,22 @@ function setTextareaHeight(el) {
   el.style.height = `${next}px`;
 }
 
+function updateStruggleUi() {
+  if (!struggleInput) return;
+  const text = normalizeStruggle(struggleInput.value);
+  const len = text.length;
+  if (struggleCount) {
+    struggleCount.textContent = `${len}/${STRUGGLE_MAX_LEN}`;
+    struggleCount.classList.toggle("is-over", len > STRUGGLE_MAX_LEN);
+  }
+}
+
 function getShareUrlForResponse(responseText) {
   const url = new URL(window.location.href);
   url.searchParams.delete(SHARE_PARAM_LEGACY);
   url.searchParams.delete(SHARE_PARAM_INDEX);
 
-  const normalized = String(responseText || "");
+  const normalized = normalizeStruggle(String(responseText || "")).slice(0, 280);
   const idx = broResponses.indexOf(normalized);
   if (idx >= 0) {
     url.searchParams.set(SHARE_PARAM_INDEX, String(idx));
@@ -452,7 +635,7 @@ function tryLoadSharedResponse() {
       }
     }
 
-    if (!resolved && legacy) resolved = legacy;
+    if (!resolved && legacy) resolved = normalizeStruggle(legacy).slice(0, 280);
     if (!resolved) return false;
 
     currentResponse = resolved;
@@ -462,12 +645,51 @@ function tryLoadSharedResponse() {
     showView("result");
     applyChaosUi();
     maybeShowFunnelTrigger();
-    if (splash) splash.classList.add("is-hidden");
+    if (splash) {
+      splash.classList.add("is-hiding");
+      window.setTimeout(() => splash.classList.add("is-hidden"), 240);
+    }
     return true;
   } catch (e) {
     return false;
   }
 }
+
+let activeModal = null;
+let prevFocusEl = null;
+
+function getFocusable(root) {
+  if (!root) return [];
+  return Array.from(
+    root.querySelectorAll(
+      'button, [href], input, textarea, select, details, [tabindex]:not([tabindex="-1"])',
+    ),
+  ).filter((el) => !el.hasAttribute("disabled") && el.getAttribute("aria-hidden") !== "true");
+}
+
+document.addEventListener("keydown", (e) => {
+  if (!activeModal) return;
+  if (e.key === "Escape") {
+    e.preventDefault();
+    closeModal(activeModal);
+    return;
+  }
+  if (e.key !== "Tab") return;
+  const focusables = getFocusable(activeModal);
+  if (focusables.length === 0) return;
+  const first = focusables[0];
+  const last = focusables[focusables.length - 1];
+  const active = document.activeElement;
+  if (e.shiftKey && active === first) {
+    e.preventDefault();
+    last.focus();
+    return;
+  }
+  if (!e.shiftKey && active === last) {
+    e.preventDefault();
+    first.focus();
+  }
+});
 
 function normalizeStruggle(text) {
   return String(text || "").replace(/\s+/g, " ").trim();
@@ -952,6 +1174,7 @@ function maybeShowFunnelTrigger() {
 function setCreatorOutput(text) {
   if (!creatorOutput) return;
   creatorOutput.textContent = String(text || "").trim();
+  if (creatorStatus) creatorStatus.textContent = "";
 }
 
 function generateHooks() {
@@ -1038,7 +1261,7 @@ function generateVideoIdea() {
 
 async function generateBlessing() {
   const myNonce = (blessingNonce += 1);
-  lastStruggle = normalizeStruggle(struggleInput?.value);
+  lastStruggle = normalizeStruggle(struggleInput?.value).slice(0, STRUGGLE_MAX_LEN);
   if (lastStruggle) addTrend(lastStruggle);
   setCreatorOutput("");
   broResponseEl.textContent = "Receiving the blessing...";
@@ -1071,8 +1294,13 @@ async function generateBlessing() {
 
 function openModal(el) {
   if (!el) return;
+  prevFocusEl = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+  activeModal = el;
   el.classList.add("is-open");
   el.setAttribute("aria-hidden", "false");
+  const focusables = getFocusable(el);
+  const closeBtn = el.querySelector(".modal__close");
+  (closeBtn || focusables[0] || el).focus?.({ preventScroll: true });
 }
 
 function closeModal(el) {
@@ -1089,6 +1317,9 @@ function closeModal(el) {
     if (sharePreview) sharePreview.removeAttribute("src");
     if (shareImageStatus) shareImageStatus.textContent = "";
   }
+  if (activeModal === el) activeModal = null;
+  if (prevFocusEl) prevFocusEl.focus?.({ preventScroll: true });
+  prevFocusEl = null;
 }
 
 function wrapLines(ctx, text, maxWidth) {
@@ -1422,7 +1653,11 @@ function wireActions() {
       if (struggleInput) {
         struggleInput.value = template;
         setTextareaHeight(struggleInput);
+        updateStruggleUi();
         struggleInput.focus({ preventScroll: true });
+        playChime("blessing");
+      }
+    });
         playChime("blessing");
       }
     });
@@ -1466,10 +1701,27 @@ function wireActions() {
       playChime("blessing");
     });
   }
+  if (copyCreatorBtn) {
+    copyCreatorBtn.addEventListener("click", async () => {
+      track("Creator_Copy");
+      const text = (creatorOutput?.textContent || "").trim();
+      if (!text) {
+        if (creatorStatus) creatorStatus.textContent = "Nothing to copy yet.";
+        return;
+      }
+      const copied = await copyToClipboard(text);
+      if (creatorStatus) creatorStatus.textContent = copied ? "Copied." : "Copy failed.";
+      if (copied) playChime("share");
+    });
+  }
 
   if (struggleInput) {
     setTextareaHeight(struggleInput);
-    struggleInput.addEventListener("input", () => setTextareaHeight(struggleInput));
+    updateStruggleUi();
+    struggleInput.addEventListener("input", () => {
+      setTextareaHeight(struggleInput);
+      updateStruggleUi();
+    });
   }
 
   struggleInput.addEventListener("keydown", (e) => {
@@ -1578,7 +1830,10 @@ function wireActions() {
 
   if (splashCta) {
     splashCta.addEventListener("click", () => {
-      if (splash) splash.classList.add("is-hidden");
+      if (splash) {
+        splash.classList.add("is-hiding");
+        window.setTimeout(() => splash.classList.add("is-hidden"), 240);
+      }
       try {
         localStorage.setItem(SPLASH_SEEN_KEY, getLocalDateKey());
       } catch (e) {
@@ -1591,11 +1846,55 @@ function wireActions() {
 
 function registerServiceWorker() {
   if (!("serviceWorker" in navigator)) return;
-  navigator.serviceWorker.register("service-worker.js").catch(() => {});
+  let refreshing = false;
+
+  const onControllerChange = () => {
+    if (refreshing) return;
+    refreshing = true;
+    window.location.reload();
+  };
+
+  navigator.serviceWorker.addEventListener("controllerchange", onControllerChange);
+
+  navigator.serviceWorker
+    .register("service-worker.js")
+    .then((reg) => {
+      const maybeOfferUpdate = () => {
+        if (!navigator.serviceWorker.controller) return;
+        if (!reg.waiting) return;
+        showToast({
+          title: "Update ready",
+          sub: "A new version of WWBD is available.",
+          primaryLabel: "Refresh",
+          secondaryLabel: "Later",
+          onPrimary: () => {
+            track("Update_Refresh");
+            try {
+              reg.waiting?.postMessage({ type: "SKIP_WAITING" });
+            } catch (e) {
+              window.location.reload();
+            }
+          },
+          onSecondary: () => track("Update_Later"),
+        });
+      };
+
+      if (reg.waiting) maybeOfferUpdate();
+
+      reg.addEventListener("updatefound", () => {
+        const nw = reg.installing;
+        if (!nw) return;
+        nw.addEventListener("statechange", () => {
+          if (nw.state === "installed") maybeOfferUpdate();
+        });
+      });
+    })
+    .catch(() => {});
 }
 
 wireNav();
 wireActions();
+wireInstall();
 registerServiceWorker();
 
 applyLinks();
